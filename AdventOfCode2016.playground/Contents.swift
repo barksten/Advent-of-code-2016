@@ -66,6 +66,12 @@ struct Pos {
     let coord: Coord
 }
 
+extension Pos {
+    func move(in heading: CompassPoint, by numberOfSteps: Int) -> Pos {
+        return Pos(heading: heading, coord: pos.coord.move(by: numberOfSteps, inDirection: heading))
+    }
+}
+
 func move(pos: Pos, by input: ArraySlice<String>) -> Pos {
     guard let head: String = input.first else {
         print("Slut på element!")
@@ -82,8 +88,8 @@ func move(pos: Pos, by input: ArraySlice<String>) -> Pos {
     
     let tail = input.dropFirst()
     let newHeading = pos.heading.turn(to: turn)
-    let newPos = Pos(heading: newHeading, coord: pos.coord.move(by: numberOfSteps, inDirection: newHeading))
-    
+    let newPos = pos.move(in: newHeading, by: numberOfSteps)
+
     return move(pos: newPos, by: tail)
 }
 
