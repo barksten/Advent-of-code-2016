@@ -11,6 +11,21 @@ struct Coord {
     let y: Int
 }
 
+extension Coord {
+    func move(by numberOfSteps: Int, inDirection: CompassPoint) -> Coord {
+        switch inDirection {
+        case .north:
+           return Coord(x: pos.coord.x, y: pos.coord.y + numberOfSteps)
+        case .south:
+            return Coord(x: pos.coord.x, y: pos.coord.y - numberOfSteps)
+        case .east:
+            return Coord(x: pos.coord.x + numberOfSteps, y: pos.coord.y)
+        case .west:
+            return Coord(x: pos.coord.x - numberOfSteps, y: pos.coord.y)
+        }
+    }
+}
+
 enum CompassPoint {
     case north
     case south
@@ -18,9 +33,32 @@ enum CompassPoint {
     case west
 }
 
-enum Turn: Character {
-    case Left = "L"
-    case Right = "R"
+extension CompassPoint {
+    func turn(to: Direction) -> CompassPoint {
+        switch (self, to) {
+        case (.north, .left):
+            return .west
+        case (.north, .right):
+            return .east
+        case (.south, .left):
+            return .east
+        case (.south, .right):
+            return .west
+        case (.east, .left):
+            return .north
+        case (.east, .right):
+            return .south
+        case (.west, .left):
+            return .south
+        case (.west, .right):
+            return .north
+        }
+    }
+}
+
+enum Direction: Character {
+    case left = "L"
+    case right = "R"
 }
 
 struct Pos {
@@ -37,54 +75,16 @@ func move(pos: Pos, by input: ArraySlice<String>) -> Pos {
         print("Inga steg!")
         return pos
     }
-    guard let turn: Turn = Turn(rawValue: head.first!) else {
+    guard let turn: Direction = Direction(rawValue: head.first!) else {
         print("Not allowed: \(head.first!)! ")
         return pos
     }
     
     let tail = input.dropFirst()
+    let newHeading = pos.heading.turn(to: turn)
+    let newPos = Pos(heading: newHeading, coord: pos.coord.move(by: numberOfSteps, inDirection: newHeading))
     
-    switch (pos.heading, turn) {
-        
-    case (.north, .Left):
-        let newPos = Pos(heading: CompassPoint.west,
-                         coord:  Coord(x: pos.coord.x - numberOfSteps, y: pos.coord.y))
-        return move(pos: newPos, by: tail)
-        
-    case (.north, .Right):
-        let newPos = Pos(heading: CompassPoint.east,
-                         coord:  Coord(x: pos.coord.x + numberOfSteps, y: pos.coord.y))
-        return move(pos: newPos, by: tail)
-        
-    case (.east, .Left):
-        let newPos = Pos(heading: CompassPoint.north,
-                         coord:  Coord(x: pos.coord.x, y: pos.coord.y + numberOfSteps))
-        return move(pos: newPos, by: tail)
-        
-    case (.east, .Right):
-        let newPos = Pos(heading: CompassPoint.south,
-                         coord:  Coord(x: pos.coord.x, y: pos.coord.y - numberOfSteps))
-        return move(pos: newPos, by: tail)
-        
-    case (.south, .Left):
-        let newPos = Pos(heading: CompassPoint.east,
-                         coord:  Coord(x: pos.coord.x + numberOfSteps, y: pos.coord.y))
-        return move(pos: newPos, by: tail)
-        
-    case (.south, .Right):
-        let newPos = Pos(heading: CompassPoint.west,
-                         coord:  Coord(x: pos.coord.x - numberOfSteps, y: pos.coord.y))
-        return move(pos: newPos, by: tail)
-        
-    case (.west, .Left):
-        let newPos = Pos(heading: CompassPoint.south,
-                         coord:  Coord(x: pos.coord.x, y: pos.coord.y - numberOfSteps))
-        return move(pos: newPos, by: tail)
-    case (.west, .Right):
-        let newPos = Pos(heading: CompassPoint.north,
-                         coord:  Coord(x: pos.coord.x, y: pos.coord.y + numberOfSteps))
-        return move(pos: newPos, by: tail)
-    }
+    return move(pos: newPos, by: tail)
 }
 
 func distance(start: Coord, stop: Coord) -> Int {
